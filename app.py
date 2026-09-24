@@ -1525,6 +1525,110 @@ def _free_md1_pairs() -> set[tuple[str, str]]:
     return out
 
 
+def _render_goal_markets(pred, home, away):
+    """Render goal-related betting markets from the final score matrix."""
+
+    sm = pred["score_matrix"]
+
+    home_goal_vector = np.arange(sm.shape[0])
+    away_goal_vector = np.arange(sm.shape[1])
+
+    home_goals = home_goal_vector[:, None]
+    away_goals = away_goal_vector[None, :]
+    total_goals = home_goals + away_goals
+
+    st.subheader("⚽ Goal Markets")
+
+    # Total Goals O/U
+    total_rows = []
+    for line in (0.5, 1.5, 2.5, 3.5, 4.5):
+        over = float(sm[total_goals > line].sum())
+        under = float(sm[total_goals <= line].sum())
+
+        total_rows.append({
+            "Line": f"Over/Under {line}",
+            "Over": f"{over * 100:.1f}%",
+            "Under": f"{under * 100:.1f}%",
+        })
+
+    st.dataframe(
+        pd.DataFrame(total_rows),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    # BTTS
+    st.markdown("### Both Teams To Score")
+
+    btts_yes = float(
+        sm[(home_goals >= 1) & (away_goals >= 1)].sum()
+    )
+    btts_no = float(1.0 - btts_yes)
+
+    b1, b2 = st.columns(2)
+    b1.metric("BTTS — Yes", f"{btts_yes * 100:.1f}%")
+    b2.metric("BTTS — No", f"{btts_no * 100:.1f}%")
+
+    # Team Goals
+    st.markdown("### Team Goal Markets")
+
+    home_rows = []
+    away_rows = []
+
+    for line in (0.5, 1.5, 2.5):
+        home_over = float(
+            sm[home_goal_vector > line, :].sum()
+        )
+        away_over = float(
+            sm[:, away_goal_vector > line].sum()
+        )
+
+        home_rows.append({
+            "Line": f"Over/Under {line}",
+            "Over": f"{home_over * 100:.1f}%",
+            "Under": f"{(1.0 - home_over) * 100:.1f}%",
+        })
+
+        away_rows.append({
+            "Line": f"Over/Under {line}",
+            "Over": f"{away_over * 100:.1f}%",
+            "Under": f"{(1.0 - away_over) * 100:.1f}%",
+        })
+
+    home_col, away_col = st.columns(2)
+
+    with home_col:
+        st.markdown(f"**{home} Goals**")
+        st.dataframe(
+            pd.DataFrame(home_rows),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    with away_col:
+        st.markdown(f"**{away} Goals**")
+        st.dataframe(
+            pd.DataFrame(away_rows),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+    # Clean Sheets
+    st.markdown("### Clean Sheet")
+
+    home_clean_sheet = float(sm[:, 0].sum())
+    away_clean_sheet = float(sm[0, :].sum())
+
+    c1, c2 = st.columns(2)
+    c1.metric(
+        f"{home} Clean Sheet",
+        f"{home_clean_sheet * 100:.1f}%",
+    )
+    c2.metric(
+        f"{away} Clean Sheet",
+        f"{away_clean_sheet * 100:.1f}%",
+    )
+
 def _render_match_detail(home: str, away: str, wc_blend: float = 0.30) -> None:
     """Full single-match analytics for a WC fixture: outcome probabilities,
     most-likely scorelines, and the scoreline heatmap. Reached by clicking a
@@ -1560,9 +1664,11 @@ def _render_match_detail(home: str, away: str, wc_blend: float = 0.30) -> None:
     k2.metric("Draw", f"{pred['outcome']['D']*100:.1f}%")
     k3.metric(f"{away} win", f"{pred['outcome']['A']*100:.1f}%")
     k4.metric("Smartest score pick", f"{hg} – {ag}")
-    k5.metric("Expected goals", f"{pred['lambda_home']:.2f} – {pred['lambda_away']:.2f}")
+    k5.metric("Expected goals", ...)
 
-    st.divider()
+_render_goal_markets(pred, home, away)
+
+st.divider()
     col_bar, col_top = st.columns(2)
     with col_bar:
         st.subheader("Outcome probabilities")
