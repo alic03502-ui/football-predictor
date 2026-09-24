@@ -878,9 +878,11 @@ def render_match():
     k2.metric("Draw",        f"{pred['outcome']['D']*100:.1f}%")
     k3.metric(f"{away_disp} win", f"{pred['outcome']['A']*100:.1f}%")
     k4.metric("Predicted score", f"{hg} - {ag}")
-    k5.metric("Expected goals", f"{pred['lambda_home']:.2f} - {pred['lambda_away']:.2f}")
+    k5.metric("Expected goals", ...)
 
-    st.divider()
+_render_goal_markets(pred, home, away)
+
+st.divider()
 
     col_bar, col_top = st.columns([1, 1])
     with col_bar:
