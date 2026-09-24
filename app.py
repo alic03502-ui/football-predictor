@@ -1667,9 +1667,9 @@ def _render_match_detail(home: str, away: str, wc_blend: float = 0.30) -> None:
     k4.metric("Smartest score pick", f"{hg} – {ag}")
     k5.metric("Expected goals", ...)
 
-_render_goal_markets(pred, home, away)
+    _render_goal_markets(pred, home, away)
 
-st.divider()
+    st.divider()
     col_bar, col_top = st.columns(2)
     with col_bar:
         st.subheader("Outcome probabilities")
