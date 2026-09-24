@@ -880,10 +880,9 @@ def render_match():
     k4.metric("Predicted score", f"{hg} - {ag}")
     k5.metric("Expected goals", ...)
 
-_render_goal_markets(pred, home, away)
+    _render_goal_markets(pred, home, away)
 
-st.divider()
-
+    st.divider()
     col_bar, col_top = st.columns([1, 1])
     with col_bar:
         st.subheader("Outcome probabilities")
